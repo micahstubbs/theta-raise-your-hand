@@ -40,7 +40,15 @@ public class MainActivity extends PluginActivity {
     private TakePictureTask.Callback mTakePictureTaskCallback = new TakePictureTask.Callback() {
         @Override
         public void onTakePicture(String fileUrl) {
-
+            /**
+             * You can control the LED of the camera.
+             * It is possible to change the way of lighting, the cycle of blinking, the color of light emission.
+             * Light emitting color can be changed only LED3.
+             */
+            // turn the LED yellow when we successfuly take an
+            // accelerometer photo
+            // TODO turn off LED when done (after 2 seconds)
+            notificationLedBlink(LedTarget.LED3, LedColor.YELLOW, 2000);
         }
     };
 
@@ -49,9 +57,11 @@ public class MainActivity extends PluginActivity {
     private SensorManager graSensorManager;
     private AccelerationGraSensor accelerationGraSensor;
 
+    // TODO perhaps modify this
     private static final int ACCELERATION_INTERVAL_PERIOD = 1000;
     private Timer timer;
 
+    // private static final float ACCELERATION_THRESHOLD_X = 4.0f;
     private static final float ACCELERATION_THRESHOLD_X = 2.0f;
     private static final float ACCELERATION_THRESHOLD_Y = 2.0f;
     private static final float ACCELERATION_THRESHOLD_Z = 2.0f;
@@ -63,6 +73,7 @@ public class MainActivity extends PluginActivity {
 
 
         //加速度を取れる状態に設定
+        // Set to be able to get acceleration
         graSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         accelerationGraSensor = new AccelerationGraSensor(graSensorManager);
 
@@ -89,7 +100,7 @@ public class MainActivity extends PluginActivity {
                  * It is possible to change the way of lighting, the cycle of blinking, the color of light emission.
                  * Light emitting color can be changed only LED3.
                  */
-                notificationLedBlink(LedTarget.LED3, LedColor.BLUE, 1000);
+                notificationLedBlink(LedTarget.LED3, LedColor.MAGENTA, 2000);
             }
 
             @Override
@@ -108,13 +119,25 @@ public class MainActivity extends PluginActivity {
             @Override
             public void run() {
                 // 加速度のログを出力
+                // Output acceleration log
                 Log.d("accelerX", String.valueOf(accelerationGraSensor.getX()));
                 Log.d("accelerY", String.valueOf(accelerationGraSensor.getY()));
                 Log.d("accelerZ", String.valueOf(accelerationGraSensor.getZ()));
 
-                if (Math.abs(accelerationGraSensor.getX()) > ACCELERATION_THRESHOLD_X ||
-                        Math.abs(accelerationGraSensor.getY()) > ACCELERATION_THRESHOLD_Y ||
-                        Math.abs(accelerationGraSensor.getZ()) > ACCELERATION_THRESHOLD_Z) {
+                // make this gesture based
+                // raise my hand in the users room reference Y-direction
+                // OR UP :-)
+                // take a photo
+                //
+                // Q how sensitive?
+                // Q only up, not down?
+                //
+//                if (Math.abs(accelerationGraSensor.getX()) > ACCELERATION_THRESHOLD_X ||
+//                        Math.abs(accelerationGraSensor.getY()) > ACCELERATION_THRESHOLD_Y ||
+//                        Math.abs(accelerationGraSensor.getZ()) > ACCELERATION_THRESHOLD_Z) {
+//                    new TakePictureTask(mTakePictureTaskCallback).execute();
+//                }
+                if (Math.abs(accelerationGraSensor.getX()) > ACCELERATION_THRESHOLD_X ) {
                     new TakePictureTask(mTakePictureTaskCallback).execute();
                 }
 //
@@ -136,6 +159,7 @@ public class MainActivity extends PluginActivity {
         super.onDestroy();
         if (graSensorManager != null) {
             // イベントリスナーの解除
+            // Release event listener
             graSensorManager.unregisterListener(accelerationGraSensor);
         }
     }
